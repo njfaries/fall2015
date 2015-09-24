@@ -1,0 +1,24 @@
+Project Title: ePark Remote Control System (Software)
+Group Members: Nathaniel Faries, Neil Edelman, Lilly Tong, Joanna Halpern
+Project Supervisors:
+Intellectual Property: Goes to company
+
+
+
+EMS founded in 2009, purpose of manufacturing and distributing small electric vehicles. Saw need for easy way to recharge vehicles.  Developed ePark in response. It is a stand-alone solar recharging station that works at standard house voltage (220v in EU, 120v in NA).  Made to be separate from car recharging stations, which are bulky and expensive and generally by roadways (i.e. not in parks or campuses).  First installation of this system was in 2011 and it is still working today.  Have done no work on it at all but it still works.  The goal of this project is to take this further.  New company in canada to take all IP of ePark to set up here.  The stations should be able to communicate with each other and with HQ to control and monitor power usage.  Energy delivered to users is to be free.  Goal is to have them be isolated from the power grid and fully based on photovoltaic power generation.  This project wants to tkae these isolated units and connect them to create an ePark network by adding control systems, remote access, and LED displays.  Purpose of controlling system is to provide fair access to everyone and prevent people from abusing the system.
+
+Income generation comes from advertising, which is run by an LED display powered by the same solar panel that charges the battery.  Potential for $216/day per ePark unit, target sales are for $100/day/ePark.
+
+Motivation: brand new product. First AC charging device in the streets NOT connected to the grid:
+
+Deliverables:
+For April: A physical prototype of a working system.  May need futher fine-tuning/testing but want a working device.  For software: to have the website, app, and backend.
+Develop website first?
+
+State on project proposal than an NDA will be signed at some point in the future.
+
+Ideas:
+--Use NFC to activate epark as an alternative method from punch code? would this need internet...?
+--Need way to detect device plugged in.
+--Have a "find nearest location" feature on app (maybe with "nearest free location"?...actually geolocation miiiight not be feasible/could require a lot more development overhead)
+

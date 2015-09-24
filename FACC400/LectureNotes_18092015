@@ -1,0 +1,29 @@
+Technical Practice: Analysis and Design
+
+Engineers usually follow a standard proceedure both for the sake of the company and also for the sake of reassuring the client.
+After an agreement is signed, a work plan is prepared by the engineer and signed off by the client.  This includes
+-Scope of project -- important to define.
+-Statemnet of work -- who is going to do what
+-Work breakdown structure -- some kind of division of the work into different tasks. What are inputs to the task?  What is the task deliverable?  The deliverable needs a date, which is tied to a schedule.
+-Project team
+-Resources -- Human resources, technological resources, hardware/software..etc.
+-Person-hour and cost estimates -- if a fixed price, not totally necessary.
+-Description of deliverables -- manage the expectations of the client.  Don't under-deliver, but make sure to be clear about what will be delivered
+-Project schedule -- Usually a Gantt chart. Sometimes Excel
+-Approvals section -- Where people sign off, approve revisions, etc.
+
+Problem analysis:
+-Problem statement -- there must be some problem because you are doing work.  Includes project goals and constraints, performance specifications
+--Project objectives 
+--Data gathering -- Things like market studies, competitors' products, regulations
+--Assumptions -- need to be laid out clearly and communicated to the client.
+-Potential solutions
+--Analysis of potential approaches
+--Selection of best solution approach
+-Conclusion and recommendations
+
+After analysis, design is key as it leads to deliverables
+
+Each design project starts with two questions:
+-Is there really a problem?
+-If so, whose problem is it?
