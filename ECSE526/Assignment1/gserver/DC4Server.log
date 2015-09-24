@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2015-09-24T20:59:50.044318Z</date>
+  <millis>1443128390044</millis>
+  <nanos>318000</nanos>
+  <sequence>0</sequence>
+  <logger>global</logger>
+  <level>INFO</level>
+  <class>DC4Server</class>
+  <method>&lt;init&gt;</method>
+  <thread>1</thread>
+  <message>DC4Server on port 12345 with timeout = 10000 ms is up.</message>
+</record>
+<record>
+  <date>2015-09-24T20:59:53.775952Z</date>
+  <millis>1443128393775</millis>
+  <nanos>952000</nanos>
+  <sequence>1</sequence>
+  <logger>global</logger>
+  <level>INFO</level>
+  <class>DC4Server$ClientThread</class>
+  <method>processLine</method>
+  <thread>11</thread>
+  <message>white player of gameID = "mytestgame" is waiting for an opponent...</message>
+</record>
+<record>
+  <date>2015-09-24T21:00:02.373170Z</date>
+  <millis>1443128402373</millis>
+  <nanos>170000</nanos>
+  <sequence>2</sequence>
+  <logger>global</logger>
+  <level>INFO</level>
+  <class>DC4Server$ClientThread</class>
+  <method>run</method>
+  <thread>12</thread>
+  <message>white player's client of gameID = "mytestgame" is disconnected.</message>
+</record>
+</log>
