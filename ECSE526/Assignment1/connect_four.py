@@ -19,7 +19,7 @@ def is_win(state):
     for row in state:
         j = 0
         for index in row:
-            if index == "X":
+            if index == "X": #need to figure out how to define this guy to vary accoriding to colour
                 piece_locations.append((i, j))
             j += 1
         i += 1
@@ -31,7 +31,6 @@ def is_win(state):
     #         or piece_locations[i][0] == piece_locations[i+1][0] + 1 == piece_locations[i+2][0] + 2 == piece_locations[i+3][0] + 3 and piece
     #lolwtf am i doing
 
-
 def is_loss(state):
     return 0
 
@@ -42,9 +41,63 @@ def is_terminal(state):
         return -1
     return 0
 
+def find_sequence(character, state): #character = x or o
+    i = 0
+    j = 0
+    for row in state:
+        for index in row:
+            if index == character:
+                j = index
+
+
+def examine_neightbors(x, y, sequence, character, state):
+    if sequence == 3:
+        return True
+    for i = x - 1: i <= x + 1: i++:
+        for j = y - 1: y <= y + 1: j++:
+            if not (i == x and j == y):
+                if state[i][j] == character:
+                    examine_neightbors(i, j, sequence + 1, character, state)
+
+
+def get_best_valid_move(state):
+    return 0
+
+def is_move_valid(state, move):
+    x = move[0]
+    if x < 0 or x > 6:
+        return False
+    y = move[1]
+    if y < 0 or y > 6:
+        return False
+    direction = move[2]
+    if direction == "N":
+        y += 1
+    elif direction == "E":
+        x += 1
+    elif direction == "S":
+        y -= 1
+    elif direction == "W":
+        x -= 1
+    else:
+        return False
+    if x < 0 or x > 6 or y < 0 or y > 6:
+        return False
+    if state[x][y] == " ":
+        return True
+    else:
+        return False
+
 def minimax(state):
     return 0
 
+def state_value(state):
+    if is_win(state):
+        return 1
+    elif is_loss(state):
+        return -1
+    else:
+        return 0
 
 def board_init(dimension, state):
     if state is not None:
