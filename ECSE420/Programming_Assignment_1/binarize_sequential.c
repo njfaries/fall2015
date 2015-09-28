@@ -19,12 +19,20 @@ void binarize(char* input_filename, char* output_filename)
 
   /* TODO: Loop through the "image" and generate the "new_image". */
   unsigned char value;
-  for (int i = 0; i < height; i++) {
-    for (int j = 0; j < width; j++) {
+  int i;
+  for (i = 0; i < height; i++) {
+    int j;
+    for (j = 0; j < width; j++) {
       /* TODO use thresholding on image[4*width*i + 4*j], put
       the result into the "value" variable (which then gets put into
       the new image's pixel)
       */
+
+      if (image[4*width*i + 4*j] <= THRESHOLD) {
+        value = 0;
+      } else {
+        value = 255;
+      }
 
       new_image[4*width*i + 4*j] = value;
       new_image[4*width*i + 4*j + 1] = value;

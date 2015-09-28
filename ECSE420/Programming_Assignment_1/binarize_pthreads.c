@@ -8,15 +8,25 @@
 /* TODO: it may help to put some global variables here 
 for your threads to use */
 
+unsigned portion
+unsigned char *new_image;
+
 void *worker_thread(void *arg) {
   /* TODO: put image processing code here */ 
+
+  int start = *((int *) arg);
+
+  new_image[4*width*i + 4*j] = value;
+  new_image[4*width*i + 4*j + 1] = value;
+  new_image[4*width*i + 4*j + 2] = value;
+  new_image[4*width*i + 4*j + 3] = 255;
+
   pthread_exit(NULL);
 }
 
-void binarize(char* input_filename, char* output_filename, int thread_count)
-{
+void binarize(char* input_filename, char* output_filename, int thread_count) {
   unsigned error;
-  unsigned char *image, *new_image;
+  unsigned char *image;
   unsigned width, height;
 
   // load image from PNG into C array
@@ -27,6 +37,18 @@ void binarize(char* input_filename, char* output_filename, int thread_count)
   struct timeval start, end; // struct used to compute execution time
   gettimeofday(&start, NULL);  // set starting point
 
+  portion = (width * height) / thread_count; //divide up image
+
+
+  int threads[thread_count];
+  int thread;
+  for (thread = 0; thread < thread_count; thread++) {
+    pthread_t work_thread;
+    int *arg = malloc(sizeof(*arg));
+    *arg = portion * thread;
+    threads[thread] = pthread_create(&work_thread, NULL, worker_thread, arg);
+  }
+  
   /* TODO: create your thread team here and send each thread an argument 
   telling it which part of "image" to process 
 

@@ -13,6 +13,13 @@ default_state = [[" ", " ", " ", " ", " ", " ", "X"],
 
 moves = ["N", "E", "S", "W"]
 
+class Node():
+    def __init__(self, state, score, parent, children):
+        self.state = state
+        self.score = score
+        self.parent = parent
+        self.children = children
+
 def is_win(state):
     i = 0
     piece_locations = []
@@ -105,7 +112,36 @@ def board_init(dimension, state):
     board = []
     return board + [" "] * dimension ** 2
 
-def make_move():
+def find_all_moves(state):
+    i = 0
+    piece_locations = []
+    for row in state:
+        j = 0
+        for index in row:
+            if index == "X": #need to figure out how to define this guy to vary accoriding to colour
+                piece_locations.append((i, j))
+            j += 1
+        i += 1
+    return 0
+
+def apply_move(state, move):
+    return 0
+
+def compute_score(state):
+    return 0
+
+def make_tree(state, root):
+    if root is None:
+        root = Node(state, compute_score(state), None, [])
+    all_moves = find_all_moves(state)
+    for move in all_moves:
+        new_state = apply_move(state, move)
+        next_root = Node(new_state, compute_score(new_state), root, [])
+        make_tree(state, next_root)
+        root.children.append(next_root)
+
+
+def make_move(state):
     return "" + str(random.randint % 7) + str(random.randint % 7) + moves[random.randint % 3]
 
 #
