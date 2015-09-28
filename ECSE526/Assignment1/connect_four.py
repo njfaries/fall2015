@@ -11,9 +11,9 @@ default_state = [[" ", " ", " ", " ", " ", " ", "X"],
      ["X", " ", " ", " ", " ", " ", "O"],
      ["O", " ", " ", " ", " ", " ", " "]]
 
-moves = ["N", "E", "S", "W"]
+MOVES = ["N", "E", "S", "W"]
 
-class Node():
+class Node:
     def __init__(self, state, score, parent, children):
         self.state = state
         self.score = score
@@ -115,6 +115,7 @@ def board_init(dimension, state):
 def find_all_moves(state):
     i = 0
     piece_locations = []
+    moves = []
     for row in state:
         j = 0
         for index in row:
@@ -122,7 +123,12 @@ def find_all_moves(state):
                 piece_locations.append((i, j))
             j += 1
         i += 1
-    return 0
+    for piece in piece_locations:
+        for direction in MOVES:
+            string_move = str(piece[0]) + str(piece[1]) + direction
+            if is_move_valid(state, string_move):
+                moves.append(string_move)
+    return moves
 
 def apply_move(state, move):
     return 0
@@ -130,19 +136,32 @@ def apply_move(state, move):
 def compute_score(state):
     return 0
 
-def make_tree(state, root):
+def make_tree(state, root, depth): #depth to show how many more iterations to go through.
     if root is None:
         root = Node(state, compute_score(state), None, [])
     all_moves = find_all_moves(state)
     for move in all_moves:
         new_state = apply_move(state, move)
         next_root = Node(new_state, compute_score(new_state), root, [])
-        make_tree(state, next_root)
+        if not is_terminal(new_state):
+            make_tree(state, next_root, depth - 1)
         root.children.append(next_root)
+    return root
 
+def find_best_move(tree):
+    best_score = 0
+    best_move = None
+    for child in tree.children:
+        score = child.score + compute_score(find_best_move(child))
+        if score > best_score:
+            best_score = score
+            best_move = child
+    return best_move
 
 def make_move(state):
-    return "" + str(random.randint % 7) + str(random.randint % 7) + moves[random.randint % 3]
+    tree = make_tree(state, None, 10)
+    move = find_best_move(tree)
+    return "" + str(random.randint % 7) + str(random.randint % 7) + MOVES[random.randint % 3]
 
 #
 # TCP_PORT = 12345
