@@ -14,11 +14,12 @@ default_state = [[" ", " ", " ", " ", " ", " ", "X"],
 MOVES = ["N", "E", "S", "W"]
 
 class Node:
-    def __init__(self, state, score, parent, children):
+    def __init__(self, state, score, parent, children, move):
         self.state = state
         self.score = score
         self.parent = parent
         self.children = children
+        self.move = move #to clarify, this is the move performed to reach this node from its parent. different nodes with the same state may have different moves
 
 def is_win(state):
     i = 0
@@ -142,11 +143,11 @@ def compute_score(state):
 
 def make_tree(state, root, depth): #depth to show how many more iterations to go through.
     if root is None:
-        root = Node(state, compute_score(state), None, [])
+        root = Node(state, compute_score(state), None, [], None)
     all_moves = find_all_moves(state)
     for move in all_moves:
         new_state = apply_move(state, move)
-        next_root = Node(new_state, compute_score(new_state), root, [])
+        next_root = Node(new_state, compute_score(new_state), root, [], move)
         if not is_terminal(new_state):
             make_tree(state, next_root, depth - 1)
         root.children.append(next_root)
@@ -159,13 +160,14 @@ def find_best_move(tree):
         score = child.score + compute_score(find_best_move(child))
         if score > best_score:
             best_score = score
-            best_move = child
+            best_move = child.move
     return best_move
 
 def make_move(state):
     tree = make_tree(state, None, 10) #depth of ten to start, just as default. will tweak in the future
     move = find_best_move(tree)
-    return "" + str(random.randint % 7) + str(random.randint % 7) + MOVES[random.randint % 3]
+    return move
+    #return "" + str(random.randint % 7) + str(random.randint % 7) + MOVES[random.randint % 3]
 
 #
 # TCP_PORT = 12345
