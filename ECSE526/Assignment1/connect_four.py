@@ -153,7 +153,7 @@ def find_best_move(tree):
     return best_move
 
 def make_move(state):
-    tree = make_tree(state, None, 10) #depth of ten to start, just as default. will tweak in the future as needed
+    tree = make_tree(state, None, 10) #depth of ten to start, just as default. will tweak in the future
     move = find_best_move(tree)
     return move
 #
