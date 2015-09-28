@@ -170,6 +170,6 @@ def make_move(state):
 # print "received data:", data
 
 game_board = board_init(default_state, 7)
-# print game_board
+print game_board
 
 is_win(game_board)
