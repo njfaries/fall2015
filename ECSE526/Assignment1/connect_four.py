@@ -67,10 +67,6 @@ def examine_neightbors(state, x, y, sequence, character):
                 if state[i][j] == character:
                     examine_neightbors(i, j, sequence + 1, character, state)
 
-
-def get_best_valid_move(state):
-    return 0
-
 def is_move_valid(state, move):
     x = move[0]
     if x < 0 or x > 6:
@@ -95,17 +91,6 @@ def is_move_valid(state, move):
         return True
     else:
         return False
-
-def minimax(state):
-    return 0
-
-def state_value(state):
-    if is_win(state):
-        return 1
-    elif is_loss(state):
-        return -1
-    else:
-        return 0
 
 def board_init(state, dimension):
     if state is not None:
@@ -167,8 +152,6 @@ def make_move(state):
     tree = make_tree(state, None, 10) #depth of ten to start, just as default. will tweak in the future
     move = find_best_move(tree)
     return move
-    #return "" + str(random.randint % 7) + str(random.randint % 7) + MOVES[random.randint % 3]
-
 #
 # TCP_PORT = 12345
 # TCP_IP = '127.0.0.1'
