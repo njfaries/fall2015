@@ -117,6 +117,10 @@ def find_all_moves(state):
     return moves
 
 def apply_move(state, move):
+    x = move[0]
+    y = move[1]
+    direction = move[2]
+    #PICK UP FROM HERE
     return 0
 
 def compute_score(state):
