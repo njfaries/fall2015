@@ -48,7 +48,7 @@ def is_terminal(state):
         return -1
     return 0
 
-def find_sequence(character, state): #character = x or o
+def find_sequence(state, character): #character = x or o
     i = 0
     j = 0
     for row in state:
@@ -57,7 +57,7 @@ def find_sequence(character, state): #character = x or o
                 j = index
 
 
-def examine_neightbors(x, y, sequence, character, state):
+def examine_neightbors(state, x, y, sequence, character):
     if sequence == 3:
         return True
     for i = x - 1: i <= x + 1: i++:
@@ -106,7 +106,7 @@ def state_value(state):
     else:
         return 0
 
-def board_init(dimension, state):
+def board_init(state, dimension):
     if state is not None:
         return state
     board = []
@@ -134,6 +134,10 @@ def apply_move(state, move):
     return 0
 
 def compute_score(state):
+    if is_win(state):
+        return 1
+    elif is_loss(state):
+        return -1
     return 0
 
 def make_tree(state, root, depth): #depth to show how many more iterations to go through.
@@ -159,7 +163,7 @@ def find_best_move(tree):
     return best_move
 
 def make_move(state):
-    tree = make_tree(state, None, 10)
+    tree = make_tree(state, None, 10) #depth of ten to start, just as default. will tweak in the future
     move = find_best_move(tree)
     return "" + str(random.randint % 7) + str(random.randint % 7) + MOVES[random.randint % 3]
 
@@ -176,7 +180,7 @@ def make_move(state):
 #
 # print "received data:", data
 
-game_board = board_init(7, default_state)
+game_board = board_init(default_state, 7)
 # print game_board
 
 is_win(game_board)
