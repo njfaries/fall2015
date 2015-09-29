@@ -4,9 +4,9 @@ import random
 import socket
 import copy
 
-default_state = [[" ", " ", " ", " ", " ", " ", "X"],
-                 ["X", " ", " ", " ", " ", " ", "O"],
-                 ["O", " ", " ", " ", " ", " ", "X"],
+default_state = [[" ", " ", "X", " ", "X", "X", "X"],
+                 ["X", " ", " ", "O", " ", "O", "O"],
+                 ["O", " ", " ", " ", "O", " ", "X"],
                  ["X", " ", " ", " ", " ", " ", "O"],
                  ["O", " ", " ", " ", " ", " ", "X"],
                  ["X", " ", " ", " ", " ", " ", "O"],
@@ -43,6 +43,7 @@ def is_win(state):
     sequences = find_sequence(state, character)
     for group in sequences:
         if len(group) == 4:
+            # print sequences
             return True
     return False
 
@@ -113,7 +114,7 @@ def board_init(state, dimension, colour):
     if colour == "white":
         character = "O"
         opponent = "X"
-    else:
+    elif colour == "black":
         character = "X"
         opponent = "O"
     if state is not None:
@@ -183,25 +184,37 @@ def make_tree(state, root, depth, my_turn):  # depth to show how many more itera
     # print all_moves
     for move in all_moves:
         new_state = apply_move(state, move, my_turn)
-        my_sequences = find_sequence(new_state, character)
-        opponent_sequences = find_sequence(new_state, opponent)
-        next_root = Node(new_state, compute_score(new_state, my_sequences, opponent_sequences), root, [], move)
+        next_root = Node(new_state, 0, root, [], move)
         if not is_terminal(new_state) and depth != 0:
             # print depth
             make_tree(new_state, next_root, depth - 1, not my_turn)
+        else:
+            my_sequences = find_sequence(new_state, character)
+            opponent_sequences = find_sequence(new_state, opponent)
+            next_root.score = compute_score(new_state, my_sequences, opponent_sequences)
         root.children.append(next_root)
     return root
 
 
 def find_best_move(tree, my_turn):
-    best_score = -1
+    if my_turn:
+        best_score = -1000000
+    else:
+        best_score = 1000000
     best_move = tree.move #this is here for when we reach leaf nodes
     for child in tree.children:
         best_move_from_child = find_best_move(child, not my_turn)
         child_state = apply_move(child.state, best_move_from_child, my_turn)
-        if child.score > best_score:
-            best_score = child.score
-            best_move = child.move
+        if my_turn:
+            if child.score > best_score:
+                best_score = child.score
+                best_move = child.move
+            tree.score = best_score #goes in the for loop otherwise it would override the score of leaf nodes
+        else:
+            if child.score < best_score:
+                best_score = child.score
+                best_move = child.move
+            tree.score = best_score
     return best_move
 
 
@@ -224,15 +237,18 @@ def make_move(state):
 #
 # print "received data:", data
 
-game_board = board_init(default_state, 7, "white")
+game_board = board_init(default_state, 7, "black")
 # print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
 i = 0
-while (i < 10 and not is_win(game_board)):
-    test_tree = make_tree(game_board, None, 2, True)
-    move = find_best_move(test_tree, True)
+my_turn = True
+while (i < 1 and not is_win(game_board)):
+    test_tree = make_tree(game_board, None, 2, my_turn)
+    move = find_best_move(test_tree, my_turn)
     print move
-    game_board = apply_move(game_board, move, True)
-    print game_board
+    game_board = apply_move(game_board, move, my_turn)
+    for row in game_board:
+        print row
     i += 1
-print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
+    print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
+    my_turn = not my_turn
 # print is_win(game_board)
