@@ -122,8 +122,8 @@ def find_all_moves(state, my_turn):
                     piece_locations.append((i, j))
             j += 1
         i += 1
-    print "Printing piece locations"
-    print piece_locations
+    # print "Printing piece locations"
+    # print piece_locations
     for piece in piece_locations:
         for direction in MOVES:
             string_move = str(piece[0]) + str(piece[1]) + direction
@@ -153,8 +153,8 @@ def apply_move(state, move, my_turn):
         new_state[newx][newy] = character
     else:
         new_state[newx][newy] = opponent
-    print "Applied move: " + move
-    print new_state
+    # print "Applied move: " + move
+    # print new_state
     return new_state
 
 
@@ -170,8 +170,8 @@ def make_tree(state, root, depth, my_turn):  # depth to show how many more itera
     if root is None:
         root = Node(state, compute_score(state), None, [], None)
     all_moves = find_all_moves(state, my_turn)
-    print "Printing possible moves for this state"
-    print all_moves
+    # print "Printing possible moves for this state"
+    # print all_moves
     for move in all_moves:
         new_state = apply_move(state, move, my_turn)
         next_root = Node(new_state, compute_score(new_state), root, [], move)
@@ -194,7 +194,7 @@ def find_best_move(tree):
 
 
 def make_move(state):
-    tree = make_tree(state, None, 10)  # depth of ten to start, just as default. will tweak in the future as needed
+    tree = make_tree(state, None, 3)  # depth of three to start, just as default. will tweak in the future as needed
     move = find_best_move(tree)
     return move
 
@@ -216,5 +216,6 @@ game_board = board_init(default_state, 7, "white")
 print game_board
 test_tree = make_tree(game_board, None, 2, True)
 #print test_tree.children
-print test_tree.move
+move = find_best_move(test_tree)
+print move
 # is_win(game_board)
