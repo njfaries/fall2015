@@ -2,6 +2,7 @@ __author__ = 'nathaniel'
 
 import random
 import socket
+import copy
 
 default_state = [[" ", " ", " ", " ", " ", " ", "X"],
                  ["X", " ", " ", " ", " ", " ", "O"],
@@ -14,6 +15,7 @@ default_state = [[" ", " ", " ", " ", " ", " ", "X"],
 MOVES = ["N", "E", "S", "W"]
 
 character = ""
+opponent = ""
 
 
 class Node:
@@ -65,26 +67,21 @@ def find_sequence(state, character):  # character = x or o
 
 
 def is_move_valid(state, move):
-    x = move[0]
-    print x
-    print x < 0
-    print x > 6
-    print x < 0 or x > 6
+    x = int(move[0])
     if x < 0 or x > 6:
         return False
-    y = move[1]
-    print y
+    y = int(move[1])
     if y < 0 or y > 6:
         return False
     direction = move[2]
     if direction == "N":
-        y += 1
-    elif direction == "E":
-        x += 1
-    elif direction == "S":
-        y -= 1
-    elif direction == "W":
         x -= 1
+    elif direction == "E":
+        y += 1
+    elif direction == "S":
+        x += 1
+    elif direction == "W":
+        y -= 1
     else:
         return False
     if x < 0 or x > 6 or y < 0 or y > 6:
@@ -97,27 +94,35 @@ def is_move_valid(state, move):
 
 def board_init(state, dimension, colour):
     global character
+    global opponent
     if colour == "white":
         character = "O"
+        opponent = "X"
     else:
         character = "X"
+        opponent = "O"
     if state is not None:
         return state
     board = []
     return board + [" "] * dimension ** 2
 
 
-def find_all_moves(state):
+def find_all_moves(state, my_turn):
     i = 0
     piece_locations = []
     moves = []
     for row in state:
         j = 0
         for index in row:
-            if index == character:  # need to figure out how to define this guy to vary according to colour
-                piece_locations.append((i, j))
+            if my_turn:
+                if index == character:  # need to figure out how to define this guy to vary according to colour
+                    piece_locations.append((i, j))
+            else:
+                if index == opponent:
+                    piece_locations.append((i, j))
             j += 1
         i += 1
+    print "Printing piece locations"
     print piece_locations
     for piece in piece_locations:
         for direction in MOVES:
@@ -128,23 +133,29 @@ def find_all_moves(state):
     return moves
 
 
-def apply_move(state, move):
-    x = move[0]
-    y = move[1]
+def apply_move(state, move, my_turn):
+    new_state = copy.deepcopy(state)
+    x = int(move[0])
+    y = int(move[1])
     direction = move[2]
     newx = x
     newy = y
     if direction == "N":
-        newy += 1
-    elif direction == "E":
-        newx += 1
-    elif direction == "S":
-        newy -= 1
-    elif direction == "W":
         newx -= 1
-    state[x][y] = " "
-    state[newx][newy] = character
-    return state
+    elif direction == "E":
+        newy += 1
+    elif direction == "S":
+        newx += 1
+    elif direction == "W":
+        newy -= 1
+    new_state[x][y] = " "
+    if my_turn:
+        new_state[newx][newy] = character
+    else:
+        new_state[newx][newy] = opponent
+    print "Applied move: " + move
+    print new_state
+    return new_state
 
 
 def compute_score(state):
@@ -155,16 +166,18 @@ def compute_score(state):
     return 0
 
 
-def make_tree(state, root, depth):  # depth to show how many more iterations to go through.
+def make_tree(state, root, depth, my_turn):  # depth to show how many more iterations to go through.
     if root is None:
         root = Node(state, compute_score(state), None, [], None)
-    all_moves = find_all_moves(state)
+    all_moves = find_all_moves(state, my_turn)
+    print "Printing possible moves for this state"
     print all_moves
     for move in all_moves:
-        new_state = apply_move(state, move)
+        new_state = apply_move(state, move, my_turn)
         next_root = Node(new_state, compute_score(new_state), root, [], move)
-        if not is_terminal(new_state):
-            make_tree(state, next_root, depth - 1)
+        if not is_terminal(new_state) and depth != 0:
+            # print depth
+            make_tree(new_state, next_root, depth - 1, not my_turn)
         root.children.append(next_root)
     return root
 
@@ -201,7 +214,7 @@ def make_move(state):
 
 game_board = board_init(default_state, 7, "white")
 print game_board
-tree = make_tree(game_board, None, 10)
-# print tree.children
-# print tree.move
+test_tree = make_tree(game_board, None, 2, True)
+#print test_tree.children
+print test_tree.move
 # is_win(game_board)
