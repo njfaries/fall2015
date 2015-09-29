@@ -234,5 +234,5 @@ while (i < 10 and not is_win(game_board)):
     game_board = apply_move(game_board, move, True)
     print game_board
     i += 1
-print compute_score(game_board, find_sequence(state, character), find_sequence(state, opponent)
+print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
 # print is_win(game_board)
