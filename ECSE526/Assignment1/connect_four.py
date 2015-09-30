@@ -6,12 +6,14 @@ import copy
 
 default_state = [[" ", " ", "X", " ", "X", "X", "X"],
                  ["X", " ", " ", "O", " ", "O", "O"],
-                 ["O", " ", " ", " ", "O", " ", "X"],
+                 ["O", " ", " ", " ", " ", " ", "X"],
                  ["X", " ", " ", " ", " ", " ", "O"],
                  ["O", " ", " ", " ", " ", " ", "X"],
                  ["X", " ", " ", " ", " ", " ", "O"],
                  ["O", " ", " ", " ", " ", " ", " "]]
-
+#defining inf and neginf just for convenience
+INF = 1000000
+NEG_INF = -1000000
 MOVES = ["N", "E", "S", "W"]
 
 character = ""
@@ -69,7 +71,7 @@ def find_sequence(state, char):  # character = x or o
             i = 0
             x = piece[0] + direction[0]
             y = piece[1] + direction[1]
-            while 0 < x < 7 and 0 < y < 7 and i < 4:
+            while 0 <= x < 7 and 0 <= y < 7 and i < 3:
                 if state[x][y] == char:
                     group.append((x, y))
                 elif state[x][y] != " ":
@@ -168,13 +170,14 @@ def apply_move(state, move, my_turn):
 
 def compute_score(state, my_sequences, opponent_sequences):
     if is_win(state):
-        return 100000
+        return INF
     elif is_loss(state):
-        return -100000
+        return NEG_INF
     elif my_sequences is not None and opponent_sequences is not None:
         return 3 * len(my_sequences) - 2 * len(opponent_sequences)
     else:
         my_sequences = find_sequence(state, character)
+        print my_sequences
         opponent_sequences = find_sequence(state, opponent)
         return 3 * len(my_sequences) - 2 * len(opponent_sequences)
 
@@ -201,10 +204,11 @@ def make_tree(state, root, depth, my_turn):  # depth to show how many more itera
 
 def find_best_move(tree, my_turn):
     if my_turn:
-        best_score = -1000000
+        best_score = NEG_INF
     else:
-        best_score = 1000000
+        best_score = INF
     best_move = tree.move #this is here for when we reach leaf nodes
+    print tree.move
     for child in tree.children:
         best_move_from_child = find_best_move(child, not my_turn)
         child_state = apply_move(child.state, best_move_from_child, my_turn)
@@ -224,20 +228,22 @@ def alpha_beta(state, depth, alpha, beta, my_turn):
     if depth == 0 or is_terminal(state):
         return compute_score(state, None, None)
     if my_turn:
-        value = -100000
+        value = NEG_INF
         for move in find_all_moves(state, my_turn):
             value = max(value, alpha_beta(apply_move(state, move, my_turn), depth - 1, alpha, beta, not my_turn))
             alpha = max(alpha, value)
             if beta <= alpha:
                 break
+        print "My turn.  Move " + move + " has value: " + str(value) + "  Current depth is: " + str(depth)
         return value
     else:
-        value = 100000
+        value = INF
         for move in find_all_moves(state, my_turn):
             value = min(value, alpha_beta(apply_move(state, move, my_turn), depth - 1, alpha, beta, not my_turn))
             beta = min(beta, value)
             if beta <= alpha:
                 break
+        print "Opponent turn: " + str(value)
         return value
 
 
@@ -260,12 +266,19 @@ def make_move(state):
 #
 # print "received data:", data
 
-game_board = board_init(default_state, 7, "black")
+game_board = board_init(default_state, 7, "white")
 # print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
 i = 0
 turn = True
-while (i < 1 and not is_win(game_board)):
-    test_tree = make_tree(game_board, None, 2, turn)
+
+# print character
+
+# print compute_score(game_board, None, None)
+
+
+# alpha_beta(game_board, 3, NEG_INF, INF, turn)
+while (not is_win(game_board)):
+    test_tree = make_tree(game_board, None, 3, turn)
     best_move = find_best_move(test_tree, turn)
     print best_move
     game_board = apply_move(game_board, best_move, turn)
