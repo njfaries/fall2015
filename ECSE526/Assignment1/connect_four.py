@@ -173,7 +173,10 @@ def compute_score(state, my_sequences, opponent_sequences):
         return -100000
     elif my_sequences is not None and opponent_sequences is not None:
         return 3 * len(my_sequences) - 2 * len(opponent_sequences)
-    return 0
+    else:
+        my_sequences = find_sequence(state, character)
+        opponent_sequences = find_sequence(state, opponent)
+        return 3 * len(my_sequences) - 2 * len(opponent_sequences)
 
 
 def make_tree(state, root, depth, my_turn):  # depth to show how many more iterations to go through.
@@ -217,6 +220,26 @@ def find_best_move(tree, my_turn):
             tree.score = best_score
     return best_move
 
+def alpha_beta(state, depth, alpha, beta, my_turn):
+    if depth == 0 or is_terminal(state):
+        return compute_score(state, None, None)
+    if my_turn:
+        value = -100000
+        for move in find_all_moves(state, my_turn):
+            value = max(value, alpha_beta(apply_move(state, move, my_turn), depth - 1, alpha, beta, not my_turn))
+            alpha = max(alpha, value)
+            if beta <= alpha:
+                break
+        return value
+    else:
+        value = 100000
+        for move in find_all_moves(state, my_turn):
+            value = min(value, alpha_beta(apply_move(state, move, my_turn), depth - 1, alpha, beta, not my_turn))
+            beta = min(beta, value)
+            if beta <= alpha:
+                break
+        return value
+
 
 def make_move(state):
     tree = make_tree(state, None, 3)  # depth of three to start, just as default. will tweak in the future as needed
@@ -240,15 +263,15 @@ def make_move(state):
 game_board = board_init(default_state, 7, "black")
 # print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
 i = 0
-my_turn = True
+turn = True
 while (i < 1 and not is_win(game_board)):
-    test_tree = make_tree(game_board, None, 2, my_turn)
-    move = find_best_move(test_tree, my_turn)
-    print move
-    game_board = apply_move(game_board, move, my_turn)
+    test_tree = make_tree(game_board, None, 2, turn)
+    best_move = find_best_move(test_tree, turn)
+    print best_move
+    game_board = apply_move(game_board, best_move, turn)
     for row in game_board:
         print row
     i += 1
     print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
-    my_turn = not my_turn
+    turn = not turn
 # print is_win(game_board)
