@@ -4,13 +4,57 @@ import random
 import socket
 import copy
 
-default_state = [[" ", " ", "X", " ", "X", "X", "X"],
-                 ["X", " ", " ", "O", " ", "O", "O"],
-                 ["O", " ", " ", " ", " ", " ", "X"],
-                 ["X", " ", " ", " ", " ", " ", "O"],
-                 ["O", " ", " ", " ", " ", " ", "X"],
-                 ["X", " ", " ", " ", " ", " ", "O"],
-                 ["O", " ", " ", " ", " ", " ", " "]]
+default_state = [[' ', ' ', ' ', ' ', ' ', ' ', 'X'],
+                ['X', ' ', ' ', ' ', ' ', ' ', 'O'],
+                ['O', ' ', ' ', ' ', ' ', ' ', 'X'],
+                ['X', ' ', ' ', ' ', ' ', ' ', 'O'],
+                ['O', ' ', ' ', ' ', ' ', ' ', 'X'],
+                ['X', ' ', ' ', ' ', ' ', ' ', 'O'],
+                ['O', ' ', ' ', ' ', ' ', ' ', ' ']]
+
+
+problem_state = [[' ', ' ', ' ', ' ', ' ', ' ', 'X'],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', 'O', 'O', ' '],
+                [' ', 'O', ' ', 'X', 'X', ' ', ' '],
+                [' ', ' ', 'O', 'X', ' ', 'X', ' '],
+                [' ', 'X', ' ', 'O', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', 'O', ' ']]
+
+new_problem_state = [[' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', 'O', ' ', 'X', ' '],
+                    [' ', ' ', ' ', ' ', ' ', 'X', 'O'],
+                    [' ', ' ', ' ', 'O', 'X', 'O', 'X'],
+                    [' ', 'X', ' ', 'X', ' ', ' ', ' '],
+                    [' ', 'O', ' ', ' ', ' ', ' ', 'O']]
+
+question_1 =    [[' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                ['O', ' ', 'X', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', 'O', ' ', ' ', 'X'],
+                [' ', ' ', ' ', ' ', 'O', 'X', 'X'],
+                [' ', ' ', 'O', ' ', ' ', 'O', 'X'],
+                [' ', ' ', ' ', 'X', 'O', ' ', ' ']]
+ 
+question_2 =    [['O', 'O', ' ', ' ', ' ', ' ', ' '],
+                ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', 'X', ' ', ' ', 'O', ' '],
+                [' ', ' ', 'X', 'O', ' ', ' ', 'X'],
+                [' ', ' ', ' ', ' ', 'O', 'X', ' '],
+                [' ', 'X', ' ', ' ', ' ', ' ', ' '],
+                ['O', ' ', ' ', ' ', ' ', ' ', ' ']]
+
+question_3 =    [[' ', ' ', 'O', ' ', 'X', ' ', ' '],
+                [' ', ' ', 'O', ' ', 'X', ' ', ' '],
+                [' ', ' ', 'X', ' ', 'O', ' ', ' '],
+                [' ', ' ', 'X', ' ', 'O', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', 'O', ' ', 'X', ' ', ' '],
+                [' ', ' ', 'X', ' ', 'O', ' ', ' ']]
+
+
+
 #defining inf and neginf just for convenience
 INF = 1000000
 NEG_INF = -1000000
@@ -18,6 +62,7 @@ MOVES = ["N", "E", "S", "W"]
 
 character = ""
 opponent = ""
+nodes = 0
 
 
 class Node:
@@ -45,7 +90,6 @@ def is_win(state):
     sequences = find_sequence(state, character)
     for group in sequences:
         if len(group) == 4:
-            # print sequences
             return True
     return False
 
@@ -131,13 +175,9 @@ def find_all_moves(state, my_turn):
     else:
         piece_locations = get_piece_locations(state, opponent)
     moves = []
-    # print "My_turn: " + str(my_turn)
-    # print "Printing piece locations"
-    # print piece_locations
     for piece in piece_locations:
         for direction in MOVES:
             string_move = str(piece[0]) + str(piece[1]) + direction
-            # print is_move_valid(state, string_move)
             if is_move_valid(state, string_move):
                 moves.append(string_move)
     return moves
@@ -163,8 +203,6 @@ def apply_move(state, move, my_turn):
         new_state[newx][newy] = character
     else:
         new_state[newx][newy] = opponent
-    # print "Applied move: " + move
-    # print new_state
     return new_state
 
 
@@ -174,25 +212,36 @@ def compute_score(state, my_sequences, opponent_sequences):
     elif is_loss(state):
         return NEG_INF
     elif my_sequences is not None and opponent_sequences is not None:
-        return 3 * len(my_sequences) - 2 * len(opponent_sequences)
+        my_twos = []
+        my_threes = []
+        op_twos = []
+        op_threes = []
+        for seq in my_sequences:
+            if len(seq) == 2:
+                my_twos.append(seq)
+            elif len(seq) == 3:
+                my_threes.append(seq)
+        for seq in opponent_sequences:
+            if len(seq) == 2:
+                op_twos.append(seq)
+            elif len(seq) == 3:
+                op_threes.append(seq)
+        return len(my_twos) + 3 * len(my_threes) - len(op_twos) - 3 * len(my_threes)
     else:
-        my_sequences = find_sequence(state, character)
-        print my_sequences
-        opponent_sequences = find_sequence(state, opponent)
-        return 3 * len(my_sequences) - 2 * len(opponent_sequences)
+        return compute_score(state, find_sequence(state, character), find_sequence(state, opponent))
 
 
 def make_tree(state, root, depth, my_turn):  # depth to show how many more iterations to go through.
+    global nodes
     if root is None:
         root = Node(state, compute_score(state, find_sequence(state, character), find_sequence(state, opponent)), None, [], None)
     all_moves = find_all_moves(state, my_turn)
-    # print "Printing possible moves for this state"
-    # print all_moves
     for move in all_moves:
         new_state = apply_move(state, move, my_turn)
+        nodes += 1
         next_root = Node(new_state, 0, root, [], move)
+
         if not is_terminal(new_state) and depth != 0:
-            # print depth
             make_tree(new_state, next_root, depth - 1, not my_turn)
         else:
             my_sequences = find_sequence(new_state, character)
@@ -224,33 +273,65 @@ def find_best_move(tree, my_turn):
             tree.score = best_score
     return best_move
 
-def alpha_beta(state, depth, alpha, beta, my_turn):
+def alpha_beta(state, depth, alpha, beta, my_turn, root):
+    global nodes
     if depth == 0 or is_terminal(state):
-        return compute_score(state, None, None)
+        root.score = compute_score(state, None, None) #root already fully exists as a node. Just need to add the score
+        return root
+    if root is None:
+        root = Node(state, 0, None, None, None)
     if my_turn:
         value = NEG_INF
-        for move in find_all_moves(state, my_turn):
-            value = max(value, alpha_beta(apply_move(state, move, my_turn), depth - 1, alpha, beta, not my_turn))
+        moves = find_all_moves(state, my_turn)
+        for move in moves:
+            new_state = apply_move(state, move, my_turn)
+            new_node = Node(new_state, 0, root, None, move)
+            nodes += 1
+            value = max(value, alpha_beta(new_state, depth - 1, alpha, beta, not my_turn, new_node).score)
+            if value > alpha:
+                root.move = move
             alpha = max(alpha, value)
+            root.score = alpha
             if beta <= alpha:
                 break
-        print "My turn.  Move " + move + " has value: " + str(value) + "  Current depth is: " + str(depth)
-        return value
+        if root.move is None:
+            root.move = moves[0]
+        return root
     else:
         value = INF
-        for move in find_all_moves(state, my_turn):
-            value = min(value, alpha_beta(apply_move(state, move, my_turn), depth - 1, alpha, beta, not my_turn))
+        moves = find_all_moves(state, my_turn)
+        for move in moves:
+            new_state = apply_move(state, move, my_turn)
+            new_node = Node(new_state, 0, root, None, move)
+            nodes += 1
+            value = min(value, alpha_beta(new_state, depth - 1, alpha, beta, not my_turn, new_node).score)
+            if value < beta:
+                root.move = move
             beta = min(beta, value)
+            root.score = beta
             if beta <= alpha:
                 break
-        print "Opponent turn: " + str(value)
-        return value
+        if root.move is None: #this is because the value of nodes is getting stuff at INF or NEG_INF near goal states....
+            root.move = moves[0]
+        return root
 
 
 def make_move(state):
-    tree = make_tree(state, None, 3)  # depth of three to start, just as default. will tweak in the future as needed
-    move = find_best_move(tree)
-    return move #note that I'll have to add 1 to both of the indices before sending the string to the server cause yay 1-indexing -_-
+    global nodes
+    nodes = 0
+    move = alpha_beta(state, 3, NEG_INF, INF, True, None).move
+    x = int(move[0]) + 1 #because 1-indexing...
+    y = int(move[1]) + 1
+    move = str(x) + str(y) + move[2]
+    print nodes
+    return move
+
+def make_minimax_move(state):
+    global nodes
+    nodes = 0
+    tree = make_tree(state, None, 3, True)
+    print nodes
+
 
 
 #
@@ -267,24 +348,44 @@ def make_move(state):
 # print "received data:", data
 
 game_board = board_init(default_state, 7, "white")
+a = board_init(question_1, 7, "white")
+b = board_init(question_2, 7, "white")
+c = board_init(question_3, 7, "white")
 # print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
 i = 0
 turn = True
 
 # print character
 
-# print compute_score(game_board, None, None)
+print compute_score(game_board, None, None)
+
+print "Board a minimax"
+make_minimax_move(a)
+print "Board b minimax"
+make_minimax_move(b)
+print "Board c minimax"
+make_minimax_move(c)
+print "Board a alpha-beta"
+make_move(a)
+print "Board b alpha-beta"
+make_move(b)
+print "Board c alpha-beta"
+make_move(c)
 
 
-# alpha_beta(game_board, 3, NEG_INF, INF, turn)
-while (not is_win(game_board)):
-    test_tree = make_tree(game_board, None, 3, turn)
-    best_move = find_best_move(test_tree, turn)
-    print best_move
-    game_board = apply_move(game_board, best_move, turn)
-    for row in game_board:
-        print row
-    i += 1
-    print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
-    turn = not turn
+
+
+# while (not is_win(game_board)):
+#     best_move = alpha_beta(game_board, 6, NEG_INF, INF, turn, None)
+#     print " "
+#     print best_move.move
+#     # for row in best_move.state:
+#     #     print row
+#     game_board = apply_move(game_board, best_move.move, turn)
+#     for row in game_board:
+#         print row
+#     i += 1
+#     print find_sequence(game_board, character)
+#     # print compute_score(game_board, None, None)
+#     turn = not turn
 # print is_win(game_board)
