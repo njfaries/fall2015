@@ -198,8 +198,8 @@ public class DC4Server {
 		    throw new Exception(x + " is not a valid column number. Needs to be between 1 and 7.");
 		}
                 
-		if (y < 1 || y > 6) {
-			throw new Exception(y + " is not a valid row number. Needs to be between 1 and 6.");
+		if (y < 1 || y > 7) {
+			throw new Exception(y + " is not a valid row number. Needs to be between 1 and 7.");
 		}
 
 		out.print(outputLine);

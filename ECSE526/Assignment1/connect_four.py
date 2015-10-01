@@ -319,7 +319,7 @@ def alpha_beta(state, depth, alpha, beta, my_turn, root):
 def make_move(state):
     global nodes
     nodes = 0
-    move = alpha_beta(state, 3, NEG_INF, INF, True, None).move
+    move = alpha_beta(state, 5, NEG_INF, INF, True, None).move
     x = int(move[0]) + 1 #because 1-indexing...
     y = int(move[1]) + 1
     move = str(x) + str(y) + move[2]
@@ -329,49 +329,38 @@ def make_move(state):
 def make_minimax_move(state):
     global nodes
     nodes = 0
-    tree = make_tree(state, None, 3, True)
+    tree = make_tree(state, None, 5, True)
     print nodes
 
 
+TCP_PORT = 12345
+TCP_IP = '127.0.0.1'
+colour = "white"
+MESSAGE = "mytestgame " + colour + "\n"
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((TCP_IP, TCP_PORT))
+s.send(MESSAGE)
+data = s.recv(1024)
+s.close()
 
-#
-# TCP_PORT = 12345
-# TCP_IP = '127.0.0.1'
-# colour = "white"
-# MESSAGE = "mytestgame " + colour + "\n"
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# s.connect((TCP_IP, TCP_PORT))
-# s.send(MESSAGE)
-# data = s.recv(1024)
-# s.close()
-#
-# print "received data:", data
+print "received data:", data
 
 game_board = board_init(default_state, 7, "white")
-a = board_init(question_1, 7, "white")
-b = board_init(question_2, 7, "white")
-c = board_init(question_3, 7, "white")
-# print compute_score(game_board, find_sequence(game_board, character), find_sequence(game_board, opponent))
-i = 0
-turn = True
+my_turn = True
+if character == "X":
+    my_turn = False
 
-# print character
 
-print compute_score(game_board, None, None)
-
-print "Board a minimax"
-make_minimax_move(a)
-print "Board b minimax"
-make_minimax_move(b)
-print "Board c minimax"
-make_minimax_move(c)
-print "Board a alpha-beta"
-make_move(a)
-print "Board b alpha-beta"
-make_move(b)
-print "Board c alpha-beta"
-make_move(c)
-
+while not is_win(game_board):
+    data = s.recv(1024)
+    last_move = " "
+    if data != last_move:
+        print last_move
+        game_board = apply_move(game_board, data, my_turn)
+        last_move = data
+    if my_turn:
+        move = make_move(game_board)
+        s.send(move)
 
 
 
