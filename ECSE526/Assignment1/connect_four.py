@@ -322,7 +322,7 @@ def make_move(state):
     move = alpha_beta(state, 5, NEG_INF, INF, True, None).move
     x = int(move[0]) + 1 #because 1-indexing...
     y = int(move[1]) + 1
-    move = str(x) + str(y) + move[2]
+    move = str(x) + str(y) + move[2] + "\n"
     print nodes
     return move
 
@@ -334,16 +334,15 @@ def make_minimax_move(state):
 
 
 TCP_PORT = 12345
-TCP_IP = '127.0.0.1'
+TCP_IP = 'tr5130gu-13.ece.mcgill.ca'
 colour = "white"
 MESSAGE = "mytestgame " + colour + "\n"
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 s.send(MESSAGE)
 data = s.recv(1024)
-s.close()
-
-print "received data:", data
+#
+# print "received data:", data
 
 game_board = board_init(default_state, 7, "white")
 my_turn = True
@@ -353,6 +352,7 @@ if character == "X":
 
 while not is_win(game_board):
     data = s.recv(1024)
+    my_turn = not my_turn
     last_move = " "
     if data != last_move:
         print last_move
@@ -363,6 +363,14 @@ while not is_win(game_board):
         s.send(move)
 
 
+# while not is_terminal(game_board):
+#     input("enter move")
+#     my_turn = not my_turn
+#     last_move = " "
+#     game_board = apply_move(game_board, data, my_turn)
+#     if my_turn:
+#         move = make_move(game_board)
+#         print move
 
 # while (not is_win(game_board)):
 #     best_move = alpha_beta(game_board, 6, NEG_INF, INF, turn, None)
