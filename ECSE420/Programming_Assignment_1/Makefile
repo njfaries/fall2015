@@ -4,7 +4,7 @@ binarize_sequential: binarize_sequential.o lodepng.o
 		gcc -o binarize_sequential binarize_sequential.o lodepng.o
 
 binarize_pthreads: binarize_pthreads.o lodepng.o
-		gcc -o binarize_pthreads binarize_pthreads.o lodepng.o
+		gcc -pthread -o binarize_pthreads binarize_pthreads.o lodepng.o
 
 binarize_openmp: binarize_openmp.o lodepng.o
 		gcc -fopenmp -o binarize_openmp binarize_openmp.o lodepng.o
@@ -22,7 +22,7 @@ sobel_sequential: sobel_sequential.o lodepng.o
 		gcc -o sobel_sequential sobel_sequential.o lodepng.o
 
 sobel_pthreads: sobel_pthreads.o lodepng.o
-		gcc -o sobel_pthreads sobel_pthreads.o lodepng.o
+		gcc -pthread -o sobel_pthreads sobel_pthreads.o lodepng.o
 
 sobel_openmp: sobel_openmp.o lodepng.o
 		gcc -fopenmp -o sobel_openmp sobel_openmp.o lodepng.o

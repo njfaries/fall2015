@@ -8,14 +8,33 @@
 /* TODO: it may help to put some global variables here 
 for your threads to use */
 
-unsigned portion
+unsigned portion;
 unsigned char *new_image;
+
+struct Thread_vars
+{
+  int start;
+  int end;
+  int width;
+  int height;
+  unsigned char *image;
+};
 
 void *worker_thread(void *arg) {
   /* TODO: put image processing code here */ 
+  struct Thread_vars vars;
+  int width = vars.width;
+  int height = vars.height;
 
-  int start = *((int *) arg);
 
+  int value, i;
+  for (i = vars.start; i < vars.end) {
+    if (vars.image[4*width*i + 4*j] <= THRESHOLD) {
+        value = 0;
+      } else {
+        value = 255;
+      }
+  }
   new_image[4*width*i + 4*j] = value;
   new_image[4*width*i + 4*j + 1] = value;
   new_image[4*width*i + 4*j + 2] = value;
@@ -44,9 +63,13 @@ void binarize(char* input_filename, char* output_filename, int thread_count) {
   int thread;
   for (thread = 0; thread < thread_count; thread++) {
     pthread_t work_thread;
-    int *arg = malloc(sizeof(*arg));
-    *arg = portion * thread;
-    threads[thread] = pthread_create(&work_thread, NULL, worker_thread, arg);
+    struct Thread_vars vars;
+    vars.start = portion * thread;
+    vars.end = portion * (thread + 1) - 1;
+    vars.width = width;
+    vars.height = height; 
+    *vars.image = image;
+    threads[thread] = pthread_create(&work_thread, NULL, worker_thread, &vars);
   }
   
   /* TODO: create your thread team here and send each thread an argument 
