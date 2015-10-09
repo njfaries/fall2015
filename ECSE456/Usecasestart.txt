@@ -1,0 +1,60 @@
+Definition of users:
+Admin (Superuser): Full access to all information provided by the system. Full access to controlling access levels of other users
+Maintenance: Access to diagnostic information (the extent of which will be specified later) for a certain subset of stations. The admin controls which stations fall into this subset.
+User: Access to charging features and information about total power generation of the epark network. Possibly will have information about usage statistics.
+
+Use cases for epark network:
+
+App:
+1.1 User activating a station by NFC:
+1.1.1 User plugs in device to be charged
+1.1.2 User opens app
+1.1.3 If not logged in, user logs in (see "User logs in" (use case 1.3))
+1.1.4 User presses button labeled "NFC"
+1.1.5 System prompts user to place phone near NFC reader on the epark unit
+1.1.6 Epark unit reads the NFC data and relays it to the server
+1.1.7 Server verifies user is permitted to activate the unit (use case 2.2)
+1.1.8 Server sends signal to unit to activate station
+1.1.9 App receives "time left" and begins counting down.
+
+1.2 User activating a station by code
+1.2.1 User plugs in device to be charged
+1.2.2 User opens app
+1.2.3 If not logged in, user logs in (see "User logs in" (use case 1.3))
+1.2.4 User enters station code into numerical text box
+1.2.5 User presses button labeleld "Activate"
+1.2.6 Server verifies user is permitted to activate the unit (use case 2.2)
+1.2.7 Server sends signal to unit to activate station
+1.2.8 App receives "time left" and begins counting down.
+
+1.3 User logs in
+1.4 User registration
+1.5 User attempts to charge when light is red
+1.6 User attempts to charge after using their allowed amount of timer
+1.7 User attempts to activate station without plugging in
+1.8 User enters the wrong code
+1.9 User requests to find nearest available station
+
+Server
+
+2.1 Server registers a new user
+2.2 Server activates a station
+2.3 
+
+Website
+Admin
+
+3.1.1 Admin views statistics
+3.1.2
+
+Maintenance
+
+3.2.1 Maintenance views diagnostics
+3.2.2
+
+User
+
+3.3.1 User views website for first time
+3.3.2 User registration
+3.3.3 User views usage statistics
+3.3.4
