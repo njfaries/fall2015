@@ -1,6 +1,6 @@
 module Main where
 
-import Control.Parallel.MPI.Base (mpiWorld, commWorld, unitTag, send, recv)
+import Control.Parallel.MPI.Simple (mpiWorld, commWorld, unitTag, send, recv)
 
 main :: IO ()
 main = mpiWorld $ \size rank ->

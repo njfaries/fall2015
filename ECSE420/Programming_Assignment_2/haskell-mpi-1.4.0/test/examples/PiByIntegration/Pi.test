@@ -1,0 +1,7 @@
+haskell-mpi-comprunclean -np 2 Pi.hs
+<<<
+10
+>>>
+3.14242599
+>>>2
+>>>=0
