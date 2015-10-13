@@ -9,5 +9,5 @@ main = mpiWorld $ \size rank ->
       else case rank of
          0 -> do (msg, _status) <- recv commWorld 1 unitTag
                  putStrLn msg
-         1 -> send commWorld 0 unitTag "Hello World"
+         1 -> send commWorld 0 unitTag "Hello"
          _ -> return ()
