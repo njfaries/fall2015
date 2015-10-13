@@ -7,7 +7,7 @@ main = mpiWorld $ \size rank ->
    if size < 2
       then putStrLn "At least two processes are needed."
       else case rank of
-         0 -> do (msg, _status) <- recv commWorld 1 unitTag
+         0 -> do (msg, _status) <- recv commWorld 2 unitTag
                  putStrLn msg
          2 -> send commWorld 0 unitTag "Hello"
          _ -> return ()
