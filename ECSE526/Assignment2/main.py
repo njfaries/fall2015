@@ -21,8 +21,6 @@ def get_probability(line):
 	l = len(wordlist)
 	return 10 ** float(wordlist[l-1])
 
-
-
 def get_vocab_word(index):
 	fp = open("data/vocab.txt")
 	for i, line in enumerate(fp):
@@ -30,6 +28,27 @@ def get_vocab_word(index):
 			wordlist = line.split()
 			l = len(wordlist)
 			return wordlist[l-1]
+	return None
+
+def get_lines_of_bigram(word):
+	fp = open("data/bigram_counts.txt")
+	index = get_index_of_word(word)
+	lines = []
+	for i, line in enumerate(fp):
+		print line.split()[0]
+		wordindex = int (line.split()[0])
+		if wordindex == index:
+			lines.append(line)
+	return lines
+
+
+
+def get_index_of_word(word):
+	fp = open("data/vocab.txt")
+	for i, line in enumerate(fp):
+		wordlist = line.split()[1]
+		if wordlist == word:
+			return i + 1
 	return None
 
 def read_unigram(index):
@@ -46,34 +65,26 @@ def read_trigram():
 
 def use_unigram():
 	fp = open("data/unigram_counts.txt")
-	max_probability = 0
-	max_probability_index = 0
-	i = 0
-	for j, line in enumerate(fp):
-		current = get_probability(line)
-		if current > max_probability:
-			max_probability = current
-			max_probability_index = i
-		i += 1
+	ran = random.random()
+	s = 0
+	i = 0	
+	for line in fp:
+		s += get_probability(line)
+		if s > ran:
+			return get_vocab_word(i)
+		else:
+			i += 1
 	word = get_vocab_word(max_probability_index)
 	return word
 
 def use_bigram(previous_word):
 	fp = open("data/bigram_counts.txt")
-	max_probability = 0
-	max_probability_index = 0
+	ran = random.random()
+	s = 0
 	i = 0
-	for j, line in enumerate(fp):
-		print line.split()[0]
-		print get_vocab_word(24)
-		current = get_probability(line)
-		if current > max_probability:
-			max_probability = current
-			max_probability_index = i
-		i += 1
-		print "still working..."
-	word = get_vocab_word(max_probability_index)
-	return word
+	# for line in fp:
+
+	return 
 
 def use_trigram(previous_word, second_word):
 	return 0
@@ -112,5 +123,4 @@ def sentence_corrector(sentence):
 # print sentence_generator()
 # print "Correcting sentence " + sentenceToCorrect
 # print sentence_corrector(sentenceToCorrect)
-print use_bigram("<s>")
-print get_vocab_word(24)
+print get_lines_of_bigram("by")
