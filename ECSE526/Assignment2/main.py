@@ -3,16 +3,35 @@ import random
 
 sentenceToCorrect = ["<s>"] #initializing the sentence to correct
 
-def read_vocab():
-	return 0
+def read_file_line(index, filename):
+	fp = open(filename)
+	if i, line in enumerate(fp):
+		if i == index:
+			return line
+	return None
 
-def read_unigram():
+def get_probability(line):
+	wordlist = line.split()
+	l = len(wordlist)
+	return 10 ** wordlist[l-1]
+
+def read_vocab(index):
+	fp = open("data/vocab.txt")
+	for i, line in enumerate(fp):
+		if i == index:
+			return line
+	return None
+
+def read_unigram(index):
+	fp = open("data/unigram_counts.txt")
 	return 0
 
 def read_bigram():
+	fp = open("data/bigram_counts.txt")
 	return 0
 
 def read_trigram():
+	fp = open("data/trigram_counts.txt")
 	return 0
 
 def use_unigram():
