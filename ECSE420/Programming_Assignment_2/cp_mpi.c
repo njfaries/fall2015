@@ -118,23 +118,32 @@ void do_elimination(double ** matrix, double * received_row, int * current_pivot
 	int i, j;
 	double coefficient;
 	for (i = 0; i < numrows; i++) {
-		coefficient = received_row[*current_pivot] / matrix[i][*current_pivot];
-		// printf("Coeffecient: %lf", coefficient);
-		for (j = 0; j < numcols; j++) {
-			matrix[i][j] -= received_row[j] * coefficient;
+		if (!(((*current_pivot % size) == rank) && (*current_pivot / size) == i)) {
+			if (received_row[*current_pivot] != 0) {coefficient =  matrix[i][*current_pivot] / received_row[*current_pivot];}
+			for (j = 0; j < numcols; j++) {
+				matrix[i][j] -= received_row[j] * coefficient;
+			}
 		}
 	}
-	// print_matrix(&numrows, &numcols);
 }
 
 void RREF(double ** matrix)
 {
 	int i;
-	while (current_pivot < numcols){
+	while (current_pivot < numcols - 1){
+		MPI_Barrier(MPI_COMM_WORLD);
 		if ((current_pivot % size) == rank) {
 			for (i = 0; i < size; i++) {
+				// printf ("current_pivot is %d and matrix[cp][cp] is %lf\n", current_pivot, matrix[current_pivot/size][current_pivot]);
+				if (matrix[current_pivot/size][current_pivot] < 0) {
+					int j;
+					for (j = 0; j < numcols; j++) {
+						matrix[current_pivot/size][j] = -matrix[current_pivot/size][j];
+					}
+				}
 				MPI_Send(matrix[current_pivot/size], numcols, MPI_DOUBLE, i, SLAVE_TO_ANY_TAG, MPI_COMM_WORLD);
 			}
+			do_elimination(matrix, matrix[current_pivot/size], &current_pivot);
 			//my turn to send out information!
 			//sending row current_pivot/size
 		} else {
@@ -142,7 +151,7 @@ void RREF(double ** matrix)
 			//receive from process #(current_pivot % size)
 			MPI_Recv(&received_row, numcols, MPI_DOUBLE, (current_pivot % size), SLAVE_TO_ANY_TAG, MPI_COMM_WORLD, &status);
 			// for (i = 0; i < numcols; i++) {
-			// 	printf("Value %d in row is %lf\n", i, received_row[i]);
+			// 	printf("Value %d in row is %lf received by process %d and the pivot is %d\n", i, received_row[i], rank, current_pivot);
 			// }
 			do_elimination(matrix, received_row, &current_pivot);
 		}
@@ -181,7 +190,6 @@ int main(int argc, char * argv[])
 	} else {
 		numrows = (numrows / size);
 	}
-	printf("Process %d:\n", rank);
 	matrix = allocate_matrix(&numrows, &numcols);
 	read_rows(argv[1], matrix);
 	RREF(matrix);
