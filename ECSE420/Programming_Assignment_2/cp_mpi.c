@@ -115,10 +115,16 @@ void print_matrix(int* rows, int* cols)
 
 void do_elimination(double ** matrix, double * received_row, int * current_pivot)
 {
-	int i, coefficient;
+	int i, j;
+	double coefficient;
 	for (i = 0; i < numrows; i++) {
 		coefficient = received_row[*current_pivot] / matrix[i][*current_pivot];
+		// printf("Coeffecient: %lf", coefficient);
+		for (j = 0; j < numcols; j++) {
+			matrix[i][j] -= received_row[j] * coefficient;
+		}
 	}
+	// print_matrix(&numrows, &numcols);
 }
 
 void RREF(double ** matrix)
@@ -127,7 +133,7 @@ void RREF(double ** matrix)
 	while (current_pivot < numcols){
 		if ((current_pivot % size) == rank) {
 			for (i = 0; i < size; i++) {
-				MPI_Isend(matrix[current_pivot/size], numcols, MPI_DOUBLE, i, SLAVE_TO_ANY_TAG, MPI_COMM_WORLD, &request);
+				MPI_Send(matrix[current_pivot/size], numcols, MPI_DOUBLE, i, SLAVE_TO_ANY_TAG, MPI_COMM_WORLD);
 			}
 			//my turn to send out information!
 			//sending row current_pivot/size
@@ -140,6 +146,7 @@ void RREF(double ** matrix)
 			// }
 			do_elimination(matrix, received_row, &current_pivot);
 		}
+		MPI_Barrier(MPI_COMM_WORLD);
 		current_pivot++;
 	}
 }
@@ -177,8 +184,8 @@ int main(int argc, char * argv[])
 	printf("Process %d:\n", rank);
 	matrix = allocate_matrix(&numrows, &numcols);
 	read_rows(argv[1], matrix);
-	print_matrix(&numrows, &numcols);
 	RREF(matrix);
+	print_matrix(&numrows, &numcols);
 	free_matrix(matrix, &numrows);
 	ierr = MPI_Finalize();
 }
