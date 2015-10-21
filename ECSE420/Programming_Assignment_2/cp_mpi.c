@@ -235,11 +235,29 @@ void output_to_file(double ** matrix)
 	FILE *file;
 	file = fopen("clicking_probabilities.txt", "w");
 	for (i = 0; i < numcols - 1; i++) {
-		char str[80]; //arbitrary to make sure it's long enough
+		char str[80]; //arbitrary size to make sure it's long enough
 		sprintf(str, "%lf\n", final_matrix[i][numcols - 1]);
 		fputs(str, file);
 	}
 	fclose(file);
+}
+
+double expected(double probability)
+{
+	return probability - (1 - probability * 2);
+}
+
+void threshold(double ** matrix, double threshold) 
+{
+	int i;
+	double total;
+	double sum = 0;
+	for (i = 0; i < numrows; i++) {
+		if (matrix[i][numcols - 1] > threshold) {
+			sum += expected(matrix[i][numcols - 1]);
+		}
+	}
+	MPI_Reduce(sum, total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 }
 
 int main(int argc, char * argv[])
