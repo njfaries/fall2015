@@ -104,13 +104,15 @@ void read_rows(char* filename, double ** matrix)
 
 void print_matrix(double ** matrix, int rows, int cols) 
 {
-	int row, column;
-	for (row = 0; row < rows; row++) {
-	 	for (column = 0; column < cols; column++) {
-	 		printf("%lf ",matrix[row][column]);
-	 	}
-	 	printf("\n");
-	}	
+	if (rank == 0) {
+		int row, column;
+		for (row = 0; row < rows; row++) {
+		 	for (column = 0; column < cols; column++) {
+		 		printf("%lf ",matrix[row][column]);
+		 	}
+		 	printf("\n");
+		}	
+	}
 }
 
 void do_elimination(double ** matrix, double * received_row, int * current_pivot)
@@ -122,6 +124,11 @@ void do_elimination(double ** matrix, double * received_row, int * current_pivot
 			if (received_row[*current_pivot] != 0) {coefficient =  matrix[i][*current_pivot] / received_row[*current_pivot];}
 			for (j = 0; j < numcols; j++) {
 				matrix[i][j] -= received_row[j] * coefficient;
+			}
+		} else {
+			coefficient = 1 / matrix[i][*current_pivot];
+			for (j = 0; j < numcols; j++) {
+				matrix[i][j] *= coefficient;
 			}
 		}
 	}
@@ -244,10 +251,10 @@ void output_to_file(double ** matrix)
 
 double expected(double probability)
 {
-	return probability - (1 - probability * 2);
+	return probability - ((1 - probability) * 2);
 }
 
-void threshold(double ** matrix, double threshold) 
+double threshold(double ** matrix, double threshold) 
 {
 	int i;
 	double total;
@@ -257,9 +264,23 @@ void threshold(double ** matrix, double threshold)
 			sum += expected(matrix[i][numcols - 1]);
 		}
 	}
+	// printf("Process %d: %lf\n", rank, sum);
 	MPI_Reduce(&sum, &total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	return total;
+}
+
+void get_best_threshold()
+{
+	double best_expected = 0;
+	double i, current, best_threshold;
+	for (i = 0.2; i <= 1.0; i += 0.2) {
+		current = threshold(matrix, i);
+		if (current > best_expected) {
+			best_threshold = i;
+		}
+	}
 	if (rank == 0) {
-		printf("%lf", total);
+		printf("Best threshold is: %lf\n", best_threshold);
 	}
 }
 
@@ -297,10 +318,12 @@ int main(int argc, char * argv[])
 	RREF(matrix);
 	absolute(matrix, &numrows, &numcols);
 	reduction(matrix, &numrows, &numcols);
+	get_best_threshold();
 	collect(matrix);
+	// print_matrix(matrix, numrows, numcols);
+	print_matrix(final_matrix, numcols - 1, numcols);
 	if (rank == 0) {
-		print_matrix(final_matrix, numcols - 1, numcols);
-		output_to_file(final_matrix);
+		// output_to_file(final_matrix);
 	}
 	free_matrix(matrix, &numrows);
 	ierr = MPI_Finalize();
