@@ -254,7 +254,7 @@ double expected(double probability)
 	return probability - ((1 - probability) * 2);
 }
 
-void threshold(double ** matrix, double threshold) 
+double threshold(double ** matrix, double threshold) 
 {
 	int i;
 	double total;
@@ -266,8 +266,21 @@ void threshold(double ** matrix, double threshold)
 	}
 	// printf("Process %d: %lf\n", rank, sum);
 	MPI_Reduce(&sum, &total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	return total;
+}
+
+void get_best_threshold()
+{
+	double best_expected = 0;
+	double i, current, best_threshold;
+	for (i = 0.2; i <= 1.0; i += 0.2) {
+		current = threshold(matrix, i);
+		if (current > best_expected) {
+			best_threshold = i;
+		}
+	}
 	if (rank == 0) {
-		printf("%lf\n", total);
+		printf("Best threshold is: %lf\n", best_threshold);
 	}
 }
 
@@ -305,7 +318,7 @@ int main(int argc, char * argv[])
 	RREF(matrix);
 	absolute(matrix, &numrows, &numcols);
 	reduction(matrix, &numrows, &numcols);
-	threshold(matrix, 0.2);
+	get_best_threshold();
 	collect(matrix);
 	// print_matrix(matrix, numrows, numcols);
 	print_matrix(final_matrix, numcols - 1, numcols);
