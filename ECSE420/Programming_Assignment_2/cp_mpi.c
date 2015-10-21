@@ -192,7 +192,7 @@ void reduction(double ** matrix, int * rows, int * cols)
 			if (temp > max) {max = temp;}
 		}
 	} else { //slave
-		int max = getmax(matrix, rows, cols);
+		max = getmax(matrix, rows, cols);
 		MPI_Send(&max, 1, MPI_DOUBLE, 0, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD);
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -235,9 +235,8 @@ void output_to_file(double ** matrix)
 	FILE *file;
 	file = fopen("clicking_probabilities.txt", "w");
 	for (i = 0; i < numcols - 1; i++) {
-		char* str;
+		char str[80]; //arbitrary to make sure it's long enough
 		sprintf(str, "%lf\n", final_matrix[i][numcols - 1]);
-		printf("%s", str);
 		fputs(str, file);
 	}
 	fclose(file);
