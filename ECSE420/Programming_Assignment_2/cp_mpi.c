@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-#include "math.h"
+#include <math.h>
 
 #define MASTER_TO_SLAVE_TAG 1 //tag for messages sent from master to slaves
 #define SLAVE_TO_ANY_TAG 2
@@ -10,7 +10,7 @@
 //each process takes rows (size * i) + rank
 
 int rank, size, numrows, numcols, current_pivot;
-double ** matrix;
+double ** matrix, ** final_matrix;
 MPI_Status status;
 MPI_Request request;
 
@@ -18,13 +18,13 @@ MPI_Request request;
 Code to allocate the matrix copied from cp_sequential.c and slightly modified
 */
 
-double ** allocate_matrix(int* rows, int* cols)
+double ** allocate_matrix(int rows, int cols)
 {
 	int i;
-	double ** matrix = (double **) malloc((*rows + 1) * sizeof(double *));
+	double ** matrix = (double **) malloc((rows + 1) * sizeof(double *));
 
-	for (i = 0; i < *rows; i++) {
-		matrix[i] = (double *) malloc(*cols * sizeof(double));
+	for (i = 0; i < rows; i++) {
+		matrix[i] = (double *) malloc(cols * sizeof(double));
 	}
 
 	return matrix;
@@ -102,11 +102,11 @@ void read_rows(char* filename, double ** matrix)
 	}
 }
 
-void print_matrix(int* rows, int* cols) 
+void print_matrix(double ** matrix, int rows, int cols) 
 {
 	int row, column;
-	for (row = 0; row < *rows; row++) {
-	 	for (column = 0; column < *cols; column++) {
+	for (row = 0; row < rows; row++) {
+	 	for (column = 0; column < cols; column++) {
 	 		printf("%lf ",matrix[row][column]);
 	 	}
 	 	printf("\n");
@@ -127,28 +127,48 @@ void do_elimination(double ** matrix, double * received_row, int * current_pivot
 	}
 }
 
+void absolute(double ** matrix, int * rows, int * cols)
+{
+	int i, j;
+	for (i = 0; i < *rows; i++) {
+		for (j = 0; j < *cols; j++) {
+			matrix[i][j] = fabs(matrix[i][j]);
+		}
+	}
+}
+
+double getmax(double ** matrix, int * rows, int * cols)
+{
+	int i;
+	double max;
+	for (i = 0; i < *rows; i++) {
+		if (matrix[i][*cols - 1] > max) { max = matrix[i][*cols - 1];}
+	}
+	return max;
+}
+
 void RREF(double ** matrix)
 {
 	int i;
 	while (current_pivot < numcols - 1){
 		MPI_Barrier(MPI_COMM_WORLD);
 		if ((current_pivot % size) == rank) {
+			//my turn to send out information!
+			//sending row current_pivot/size
+			if (matrix[current_pivot/size][current_pivot] < 0) {
+				int j;
+				for (j = 0; j < numcols; j++) {
+					matrix[current_pivot/size][j] = -matrix[current_pivot/size][j];
+				}
+			}
 			for (i = 0; i < size; i++) {
 				// printf ("current_pivot is %d and matrix[cp][cp] is %lf\n", current_pivot, matrix[current_pivot/size][current_pivot]);
-				if (matrix[current_pivot/size][current_pivot] < 0) {
-					int j;
-					for (j = 0; j < numcols; j++) {
-						matrix[current_pivot/size][j] = -matrix[current_pivot/size][j];
-					}
-				}
 				MPI_Send(matrix[current_pivot/size], numcols, MPI_DOUBLE, i, SLAVE_TO_ANY_TAG, MPI_COMM_WORLD);
 			}
 			do_elimination(matrix, matrix[current_pivot/size], &current_pivot);
-			//my turn to send out information!
-			//sending row current_pivot/size
 		} else {
-			double received_row[numcols];
 			//receive from process #(current_pivot % size)
+			double received_row[numcols];
 			MPI_Recv(&received_row, numcols, MPI_DOUBLE, (current_pivot % size), SLAVE_TO_ANY_TAG, MPI_COMM_WORLD, &status);
 			// for (i = 0; i < numcols; i++) {
 			// 	printf("Value %d in row is %lf received by process %d and the pivot is %d\n", i, received_row[i], rank, current_pivot);
@@ -158,6 +178,69 @@ void RREF(double ** matrix)
 		MPI_Barrier(MPI_COMM_WORLD);
 		current_pivot++;
 	}
+}
+
+void reduction(double ** matrix, int * rows, int * cols)
+{
+	double max = 0;
+	int i, j;
+	if (rank == 0) { //master
+		max = getmax(matrix, rows, cols);
+		double temp;
+		for (i = 1; i < size; i++) { //get the max from each other process
+			MPI_Recv(&temp, 1, MPI_DOUBLE, i, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD, &status);
+			if (temp > max) {max = temp;}
+		}
+	} else { //slave
+		int max = getmax(matrix, rows, cols);
+		MPI_Send(&max, 1, MPI_DOUBLE, 0, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD);
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+	if (rank == 0) { //master
+		for (i = 1; i < size; i++) {
+			MPI_Isend(&max, 1, MPI_DOUBLE, i, MASTER_TO_SLAVE_TAG, MPI_COMM_WORLD, &request);
+		}
+	} else { //slave
+		MPI_Recv(&max, 1, MPI_DOUBLE, 0, MASTER_TO_SLAVE_TAG, MPI_COMM_WORLD, &status);
+	}
+	for (i = 0; i < *rows; i++) {
+		for (j = 0; j < *cols; j++) {
+			matrix[i][j] /= max;
+		}
+	}
+}
+
+void collect(double ** matrix)
+{
+	int i;
+	if (rank == 0) { //master
+		final_matrix = allocate_matrix((numcols - 1), numcols);
+		for (i = 0; i < (numcols - 1); i++) {
+			if ((i % size) == rank) {
+				final_matrix[i] = matrix[i/size];
+			} else {
+				MPI_Recv(final_matrix[i], numcols, MPI_DOUBLE, (i % size), SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD, &status);
+			}
+		}
+	} else { //slave
+		for (i = 0; i < numrows; i++) {
+			MPI_Send(matrix[i], numcols, MPI_DOUBLE, 0, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD);
+		}
+	}
+}
+
+void output_to_file(double ** matrix)
+{
+	int i, j;
+	FILE *file;
+	file = fopen("clicking_probabilities.txt", "w");
+	for (i = 0; i < numcols - 1; i++) {
+		char* str;
+		sprintf(str, "%lf\n", final_matrix[i][numcols - 1]);
+		printf("%s", str);
+		fputs(str, file);
+	}
+	fclose(file);
 }
 
 int main(int argc, char * argv[])
@@ -174,7 +257,6 @@ int main(int argc, char * argv[])
 		numcols = numrows + 1; //specified by assignment
 		int i;
 		for (i = 1; i < size; i++) { //sending out information to slaves about what rows they are reading.
-			printf("Sending to %d\n", i);
 			MPI_Isend(&numrows, 1, MPI_INT, i, MASTER_TO_SLAVE_TAG, MPI_COMM_WORLD, &request);
 		}
 	}
@@ -190,10 +272,16 @@ int main(int argc, char * argv[])
 	} else {
 		numrows = (numrows / size);
 	}
-	matrix = allocate_matrix(&numrows, &numcols);
+	matrix = allocate_matrix(numrows, numcols);
 	read_rows(argv[1], matrix);
 	RREF(matrix);
-	print_matrix(&numrows, &numcols);
+	absolute(matrix, &numrows, &numcols);
+	reduction(matrix, &numrows, &numcols);
+	collect(matrix);
+	if (rank == 0) {
+		print_matrix(final_matrix, numcols - 1, numcols);
+		output_to_file(final_matrix);
+	}
 	free_matrix(matrix, &numrows);
 	ierr = MPI_Finalize();
 }
