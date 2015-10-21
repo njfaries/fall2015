@@ -257,7 +257,10 @@ void threshold(double ** matrix, double threshold)
 			sum += expected(matrix[i][numcols - 1]);
 		}
 	}
-	MPI_Reduce(sum, total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&sum, &total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if (rank == 0) {
+		printf("%lf", total);
+	}
 }
 
 int main(int argc, char * argv[])
