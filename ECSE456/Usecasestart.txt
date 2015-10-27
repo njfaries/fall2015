@@ -28,16 +28,36 @@ App:
 1.2.8 App receives "time left" and begins counting down.
 
 1.3 User logs in
+1.3.1 User opens app
+1.3.2 App recognizes that there is no account logged in and prompts user for username and password
+1.3.3 User enters user name and password
+1.3.4 App verifies log in information with server (Note that this step requires an internet connection!)
+1.3.5 User is logged in and remains logged in until they log out of that device
+
 1.4 User registration
+
 1.5 User attempts to charge when light is red
+1.5.1 User attempts to activate station by either 1.1 or 1.2
+1.5.2 Server recognizes that station is out of service
+1.5.3 App receives "out of service" message and displays it to user
+1.5.4 App automatically suggests nearest available ePark (Note that this does not require access to phone GPS as the server knows where the epark in question is!)
+
 1.6 User attempts to charge after using their allowed amount of timer
+1.6.1 User attempts to activate station by either 1.1 or 1.2
+1.6.2 User
+
 1.7 User attempts to activate station without plugging in
+
 1.8 User enters the wrong code
+
 1.9 User requests to find nearest available station
+1.9.1
 
 Server
 
 2.1 Server registers a new user
+2.1.1 Server receives 
+
 2.2 Server activates a station
 2.3 
 
